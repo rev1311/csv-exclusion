@@ -1,4 +1,3 @@
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -7,9 +6,6 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import javax.swing.JFileChooser;
 
 import org.apache.commons.csv.CSVFormat;
