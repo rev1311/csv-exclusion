@@ -21,7 +21,7 @@ public class CsvExclusion {
 
     private static File file1;
     private static File file2;
-    private static File outputFile = new File("C:/Hub/CleanedEmailList.csv");
+    private static File outputFile = new File("C:/Hub/FilteredEmailList.csv");
     public static void main(String[] args) throws Exception {
         System.out.println("");
         System.out.println("********** Choose Mailing list for first file, choose Exclusion list second file. **********");
@@ -54,9 +54,9 @@ public class CsvExclusion {
     }
 
     public static void removeEntriesFromFirstFile(File file1, File file2, File outputFile) throws IOException {
-        System.out.println("mapping entries...");
         Set<String> emailSet = getEmailSetFromFile(file2);
         
+        System.out.println("mapping entries...");
         try (CSVParser parser = new CSVParser(new FileReader(file1), CSVFormat.EXCEL.withHeader())) {
 
             try (Writer writer = new FileWriter(outputFile);
