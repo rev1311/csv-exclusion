@@ -3,9 +3,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.Writer;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.JFileChooser;
 
@@ -21,7 +24,7 @@ public class CsvExclusion {
     private static File outputFile = new File("C:/Hub/CleanedEmailList.csv");
     public static void main(String[] args) throws Exception {
         System.out.println("");
-        System.out.println("********** Choose Exclusion list for first file, choose Mailing list second file. **********");
+        System.out.println("********** Choose Mailing list for first file, choose Exclusion list second file. **********");
         System.out.println("");
         showFileChooser();
 
@@ -38,30 +41,31 @@ public class CsvExclusion {
 
         if (result == JFileChooser.APPROVE_OPTION && file1 == null) {
             java.io.File selectedFile = fileChooser.getSelectedFile();
-            System.out.println("Selected File1: " + selectedFile.getAbsolutePath());
+            System.out.println("Selected Mailing List: " + selectedFile.getAbsolutePath());
             file1 = selectedFile;
-            CheckSpecialCharacters(file1);
             showFileChooser();
         } else if (result == JFileChooser.APPROVE_OPTION && file1 != null) {
             java.io.File selectedFile = fileChooser.getSelectedFile();
-            System.out.println("Selected File2: " + selectedFile.getAbsolutePath());
+            System.out.println("Selected Exclusion List: " + selectedFile.getAbsolutePath());
             file2 = selectedFile;
-            CheckSpecialCharacters(file2);
         } else {
             System.out.println("No file selected.");
         }
     }
 
     public static void removeEntriesFromFirstFile(File file1, File file2, File outputFile) throws IOException {
-System.out.println("removal fired.");
+        System.out.println("mapping entries...");
         Set<String> emailSet = getEmailSetFromFile(file2);
+        
         try (CSVParser parser = new CSVParser(new FileReader(file1), CSVFormat.EXCEL.withHeader())) {
-System.out.println("file1.");
+
             try (Writer writer = new FileWriter(outputFile);
-                 CSVParser emptyParser = CSVParser.parse("", CSVFormat.EXCEL.withHeader())) {
+                StringReader reader = new StringReader("Email Adress,First Name,Last Name,City,State,Zip,Date Opted,Loc");
+                CSVParser headParser = CSVParser.parse(reader, CSVFormat.EXCEL.withHeader())) {
 
                 // Write the header to the output file
-                emptyParser.getHeaderMap().forEach((key, value) -> {
+                System.out.println("adding headers...");
+                headParser.getHeaderMap().forEach((key, value) -> {
                     try {
                         writer.append(key).append(",");
                     } catch (IOException e) {
@@ -71,6 +75,7 @@ System.out.println("file1.");
                 writer.append(System.lineSeparator());
 
                 // Iterate over records in file1
+                System.out.println("finalizing data...");
                 for (CSVRecord record : parser) {
                     String email = record.get("Email Address");
 
@@ -89,36 +94,19 @@ System.out.println("file1.");
 
     private static Set<String> getEmailSetFromFile(File file) throws IOException {
         Set<String> emailSet = new HashSet<>();
-        System.out.println("emailSet fired.");
 
         try (CSVParser parser = new CSVParser(new FileReader(file), CSVFormat.EXCEL.withHeader())) {
+            System.out.println("filtering exclusion data...");
             for (CSVRecord record : parser) {
                 String email = record.get("Email Address");
                 emailSet.add(email);
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
         return emailSet;
     }
-
-    public static void CheckSpecialCharacters(File file) {
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            int lineNumber = 0;
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                lineNumber++;
-
-                for (char c : line.toCharArray()) {
-                    if (c < 32 || c > 126) {
-                        System.out.println("Non-ASCII character found at line " + lineNumber + ": " + c + "in file " + file);
-                    }
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    
 }
 
